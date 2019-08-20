@@ -1,37 +1,37 @@
+import vis from 'vis/dist/vis-timeline-graph2d.min'
 import React, { Component } from 'react'
 import Timeline from 'react-visjs-timeline'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import './App.css'
 
-const basicExample = {
-  options: {
-    start: '2014-04-10',
-    end: '2014-04-30',
-  },
-  items: [
-    { id: 1, content: 'item 1', start: '2014-04-20' },
-    { id: 2, content: 'item 2', start: '2014-04-14' },
-    { id: 3, content: 'item 3', start: '2014-04-18' },
-    { id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19' },
-    { id: 5, content: 'item 5', start: '2014-04-25' },
-    { id: 6, content: 'item 6', start: '2014-04-27', type: 'point' },
-  ],
-}
+moment.tz.setDefault('UTC')
 
 const groupsExample = {
   groups: [],
   items: [],
   options: {
+    editable: {
+      remove: true,
+      updateTime: true,
+    },
     groupOrder: 'content', // groupOrder can be a property name or a sorting function
+    moment: function(date) {
+      return vis.moment(date).utc()
+    },
+    max: moment(1000 * 60 * 60 * 5),
+    min: moment(0),
+    zoomMin: 1000 * 60 * 30,
+    zoomMax: 1000 * 60 * 30,
   },
 }
 
-const now = moment()
+const now = moment(0)
+  .hours(0)
   .minutes(0)
   .seconds(0)
   .milliseconds(0)
 const groupCount = 3
-const itemCount = 20
+const itemCount = 3
 
 // create a data set with groups
 const names = ['John', 'Alston', 'Lee', 'Grant']
@@ -41,8 +41,8 @@ for (let g = 0; g < groupCount; g++) {
 
 // create a dataset with items
 for (let i = 0; i < itemCount; i++) {
-  const start = now.clone().add(Math.random() * 200, 'hours')
-  const group = Math.floor(Math.random() * groupCount)
+  const start = now.clone().add(Math.floor(Math.random() * 60), 'seconds')
+  const group = i
   groupsExample.items.push({
     id: i,
     group: group,
@@ -53,7 +53,8 @@ for (let i = 0; i < itemCount; i++) {
       names[group] +
       ')</span>',
     start: start,
-    type: 'box',
+    end: start.clone().add(10, 'minutes'),
+    type: 'range',
   })
 }
 
@@ -69,16 +70,6 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <p className="header">
-          A basic timeline. You can move and zoom the timeline, and select
-          items.
-        </p>
-        <Timeline {...basicExample} />
-        <p className="header">
-          This example demonstrate using groups. Note that a DataSet is used for
-          both items and groups, allowing to dynamically add, update or remove
-          both items and groups via the DataSet.
-        </p>
         <Timeline
           {...groupsExample}
           clickHandler={this.clickHandler.bind(this)}
